@@ -82,7 +82,7 @@ def rollBack(s, eles) -> State:
     startState = deepcopy(s)
     
     if not s.move(*eles):
-        print("\nThat move ends the game!")
+        print("\nDi chuyen do se end game do!")
         return startState
     return s
 
@@ -140,7 +140,7 @@ def solve(s: State, mode='dfs', verbose=False):
     
     if isWin(s):
         printState(s, verbose)
-        print(f"{mode.upper()} solved in {count_states} moves")
+        print(f"{mode.upper()} giai trong {count_states} buoc")
         return True
     
     count_states += 1
