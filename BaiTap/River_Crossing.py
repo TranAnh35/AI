@@ -59,18 +59,15 @@ class State:
         self.right = sorted(self.right)
         
 def isGameOver(s: State):
-    # for each shore, check if game is over
     for shore in s.getSides():
         if shore.count(1) > 0 and shore.count(0) > 0:
             if shore.count(1) > shore.count(0):
-                # there are more devils than priests on one shore
                 return True
 
     return False
 
 def isWin(s: State):
-    if len(s.left) == 0:  # if there is no one on the \
-        # starting side of the shore (left), game is won!
+    if len(s.left) == 0:
         print(
             f"\n\n{s.showStateSimple() if print_method == 'normal' else s.showStatePretty()}"
             + "\n~~~~~~~~ Game Won ~~~~~~~~\n"
