@@ -1,4 +1,4 @@
-import copy, math, random
+import copy, math, random, time
 
 from const import *
 from piece import *
@@ -169,6 +169,8 @@ class AI:
         if depth == 0:
             return self.static_eval(board), None # eval, move
         
+        best_move = None
+        
         # white
         if maximizing:
             max_eval = -math.inf
@@ -239,16 +241,25 @@ class AI:
         if self.engine == 'minimax':
             # printing
             print('\nFinding best move...')
+            
+            # start timing
+            start_time = time.time()
                         
             # minimax initial call
             eval, move = self.minimax(main_board, self.depth, False, -math.inf, math.inf) # eval, move
             
+            # end timing
+            end_time = time.time()
+        
             # printing
             print('\n- Initial eval:',self.static_eval(main_board))
             print('- Final eval:', eval)
             print('- Boards explored', self.explored)
             if eval >= 5000: print('* White MATE!')
             if eval <= -5000: print('* Black MATE!')
+            
+            # print time taken
+            print(f'Time taken to find best move: {end_time - start_time:.2f} seconds')
             
         # append
         self.game_moves.append(move)

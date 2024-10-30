@@ -80,7 +80,7 @@ class Board:
     def valid_move(self, piece, move):
         return move in piece.moves
 
-    def calc_moves(self, piece, row, col):
+    def generate_moves(self, piece, row, col):
 
         def pawn():
             piece = self.squares[row][col].piece
@@ -236,7 +236,142 @@ class Board:
 
         elif piece.name == 'king': 
             king()
-                        
+                 
+    def is_king_in_check(self, color):
+        king_position = None
+        # Find the king's position
+        for row in range(ROWS):
+            for col in range(COLS):
+                piece = self.squares[row][col].piece
+                if piece and piece.name == 'king' and piece.color == color:
+                    king_position = (row, col)
+                    break
+            if king_position:
+                break
+
+        if not king_position:
+            return False  # No king found, avoid further checks
+
+        king_row, king_col = king_position
+        opponent_color = 'black' if color == 'white' else 'white'
+
+        # Directional checks for threats from rooks, queens, and bishops
+        directions = {
+            "rook": [(1, 0), (0, 1), (-1, 0), (0, -1)],  # vertical and horizontal
+            "bishop": [(1, 1), (1, -1), (-1, 1), (-1, -1)],  # diagonal
+            "queen": [(1, 0), (0, 1), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)],  # both
+        }
+
+        # Check rook and queen threats along vertical/horizontal lines
+        for direction in directions["rook"]:
+            for step in range(1, max(ROWS, COLS)):
+                row = king_row + direction[0] * step
+                col = king_col + direction[1] * step
+                if not Square.in_range(row, col):
+                    break
+                square_piece = self.squares[row][col].piece
+                if square_piece:
+                    if square_piece.color == opponent_color and square_piece.name == 'rook':
+                        return True  # Rook or queen putting the king in check
+                    break
+
+        # Check bishop and queen threats along diagonal lines
+        for direction in directions["bishop"]:
+            for step in range(1, max(ROWS, COLS)):
+                row = king_row + direction[0] * step
+                col = king_col + direction[1] * step
+                if not Square.in_range(row, col):
+                    break
+                square_piece = self.squares[row][col].piece
+                if square_piece:
+                    if square_piece.color == opponent_color and square_piece.name == 'bishop':
+                        return True  # Bishop or queen putting the king in check
+                    break
+                
+        for direction in directions["queen"]:
+            for step in range(1, max(ROWS, COLS)):
+                row = king_row + direction[0] * step
+                col = king_col + direction[1] * step
+                if not Square.in_range(row, col):
+                    break
+                square_piece = self.squares[row][col].piece
+                if square_piece:
+                    if square_piece.color == opponent_color and square_piece.name == 'queen':
+                        return True  # Bishop or queen putting the king in check
+                    break
+
+        # Check knight threats
+        knight_moves = [
+            (king_row - 2, king_col + 1), (king_row - 1, king_col + 2),
+            (king_row + 1, king_col + 2), (king_row + 2, king_col + 1),
+            (king_row + 2, king_col - 1), (king_row + 1, king_col - 2),
+            (king_row - 1, king_col - 2), (king_row - 2, king_col - 1),
+        ]
+        for move in knight_moves:
+            row, col = move
+            if Square.in_range(row, col):
+                square_piece = self.squares[row][col].piece
+                if square_piece and square_piece.color == opponent_color and square_piece.name == 'knight':
+                    return True  # Knight putting the king in check
+
+        # Check pawn threats
+        pawn_row = king_row + (1 if color == 'white' else -1)
+        for pawn_col in [king_col - 1, king_col + 1]:
+            if Square.in_range(pawn_row, pawn_col):
+                square_piece = self.squares[pawn_row][pawn_col].piece
+                if square_piece and square_piece.color == opponent_color and square_piece.name == 'pawn':
+                    return True  # Pawn putting the king in check
+
+        return False  # No threats detected; king is not in check
+
+
+    
+    def calc_moves(self, piece, row, col):
+        # Calculate all possible moves for the piece
+        self.generate_moves(piece, row, col)
+
+        # If the current player's king is in check, we need to validate each move
+        if self.is_king_in_check(piece.color):
+            original_moves = piece.moves.copy()
+            valid_moves = []
+
+            for move in original_moves:
+                # Simulate the move
+                initial_piece = self.squares[move.initial.row][move.initial.col].piece
+                captured_piece = self.squares[move.final.row][move.final.col].piece
+                self.squares[move.initial.row][move.initial.col].piece = None
+                self.squares[move.final.row][move.final.col].piece = initial_piece
+
+                # Check if the move resolves the check
+                if not self.is_king_in_check(piece.color):
+                    valid_moves.append(move)
+
+                # Undo the move
+                self.squares[move.final.row][move.final.col].piece = captured_piece
+                self.squares[move.initial.row][move.initial.col].piece = initial_piece
+
+            # Set the valid moves only
+            piece.moves = valid_moves
+
+    def remove_all_moves(self):
+        for row in range(ROWS):
+            for col in range(COLS):
+                piece = self.squares[row][col].piece
+                if piece and piece.moves:
+                    piece.remove_moves()
+                    
+    def get_king_pos(self, color):
+        for row in range(ROWS):
+            for col in range(COLS):
+                piece = self.squares[row][col].piece
+                if piece and piece.name == 'king' and piece.color == color:
+                    return self.squares[row][col]  
+                
+    def is_game_over(self):
+        if self.is_king_in_check('white') != None and self.is_king_in_check('black') != None:
+            return False
+        return True   
+       
     # ------------
     # INIT METHODS
     # ------------

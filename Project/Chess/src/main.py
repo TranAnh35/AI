@@ -74,6 +74,7 @@ class Main:
                             captured = board.squares[released_row][released_col].has_piece()
                             # move
                             board.move(dragger.piece, move)
+                            board.remove_all_moves()
                             game.sound_effect(captured)
                             # draw
                             game.show_bg(screen)
@@ -134,6 +135,9 @@ class Main:
                         game.change_gamemode()
                     
                     # depth
+                    if event.key == pygame.K_2:
+                        ai.depth = 2
+                    
                     if event.key == pygame.K_3:
                         ai.depth = 3
 

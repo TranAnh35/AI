@@ -1,3 +1,5 @@
+# const.py
+
 # Kích thước cửa sổ
 WIDTH = 800
 HEIGHT = 800

@@ -77,6 +77,14 @@ class Game:
     def show_moves(self, surface):
         if self.selected_piece:
             theme = self.config.theme
+            
+            if self.board.is_king_in_check(self.selected_piece.color):
+                king_pos = self.board.get_king_pos(self.selected_piece.color)
+                
+                if self.selected_piece.name != 'king':
+                    color = theme.moves.dark
+                    rect = (king_pos.col * SQSIZE, king_pos.row * SQSIZE, SQSIZE, SQSIZE)
+                    pygame.draw.rect(surface, color, rect)
 
             for move in self.selected_piece.moves:
                 # color

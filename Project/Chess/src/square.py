@@ -34,6 +34,10 @@ class Square:
 
     def isempty_or_rival(self, color):
         return self.piece == None or self.piece.color != color
+    
+    def has_piece_type(self, color, piece_name):
+        # Check if there is a piece, and that it matches the specified color and type
+        return self.has_piece() and self.piece.color == color and self.piece.name == piece_name
 
     @staticmethod
     def in_range(*args):
