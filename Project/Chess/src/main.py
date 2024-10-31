@@ -4,6 +4,7 @@ from const import *
 from game import Game
 from move import Move
 from square import Square
+from popup import Popup
 
 class Main:
 
@@ -12,6 +13,7 @@ class Main:
         self.screen = pygame.display.set_mode( (WIDTH, HEIGHT) )
         pygame.display.set_caption('Chess')
         self.game = Game()
+        self.popup = Popup(self.screen)
 
     def mainloop(self):
 
@@ -20,6 +22,7 @@ class Main:
         board = self.game.board
         ai = self.game.ai
         dragger = self.game.dragger
+        popup = self.popup
 
         while True:
             
@@ -127,6 +130,20 @@ class Main:
                         game.show_hover(screen)
                         dragger.update_blit(screen)
 
+                # End game
+                if board.is_game_over():
+                    popup.set_winner(board.winner())
+                    popup.draw()
+                    popup.wait_for_close()
+                    
+                    game.reset()
+
+                    screen = self.screen
+                    game = self.game
+                    board = self.game.board
+                    ai = self.game.ai
+                    dragger = self.game.dragger
+                
                 # key press
                 elif event.type == pygame.KEYDOWN:
                     
@@ -157,6 +174,11 @@ class Main:
                         board = self.game.board
                         ai = self.game.ai
                         dragger = self.game.dragger
+                    
+                    if event.key == pygame.K_z:
+                        board.rollback()
+                        game.show_bg(screen)
+                        game.show_pieces(screen)
 
                 elif event.type == pygame.QUIT:
                     pygame.quit()

@@ -7,6 +7,8 @@ class Board:
 
     def __init__(self):
         self.squares = []
+        self.move_history = []
+        self.max_history = 10
         self._create()
         self._add_pieces('white')
         self._add_pieces('black')
@@ -28,6 +30,8 @@ class Board:
     # ------------
 
     def move(self, piece, move):
+        self.save_state()
+        
         initial = move.initial
         final = move.final
         # console squares update
@@ -236,7 +240,22 @@ class Board:
 
         elif piece.name == 'king': 
             king()
-                 
+
+    def save_state(self):
+        state = [[self.squares[row][col].piece for col in range(COLS)] for row in range(ROWS)], self.last_move
+        self.move_history.append(state)
+
+        if len(self.move_history) > self.max_history:
+            self.move_history.pop(0)
+  
+    def rollback(self):
+        if self.move_history:
+            state, last_move = self.move_history.pop()
+            self.last_move = last_move
+            for row in range(ROWS):
+                for col in range(COLS):
+                    self.squares[row][col].piece = state[row][col]
+              
     def is_king_in_check(self, color):
         king_position = None
         # Find the king's position
@@ -323,8 +342,6 @@ class Board:
                     return True  # Pawn putting the king in check
 
         return False  # No threats detected; king is not in check
-
-
     
     def calc_moves(self, piece, row, col):
         # Calculate all possible moves for the piece
@@ -368,9 +385,22 @@ class Board:
                     return self.squares[row][col]  
                 
     def is_game_over(self):
-        if self.is_king_in_check('white') != None and self.is_king_in_check('black') != None:
+        white_king_pos = self.get_king_pos('white')
+        black_king_pos = self.get_king_pos('black')
+        
+        if white_king_pos is not None and black_king_pos is not None:
             return False
-        return True   
+        return True
+    
+    def winner(self):
+        white_king_pos = self.get_king_pos('white')
+        black_king_pos = self.get_king_pos('black')
+        
+        if white_king_pos is not None and black_king_pos is None:
+            return 'white'
+        if black_king_pos is not None and white_king_pos is None:
+            return 'black'
+        return None
        
     # ------------
     # INIT METHODS
